@@ -10,11 +10,13 @@ CONFIG += c++17
 
 SOURCES += \
     gamemanager.cpp \
+    gameobject.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     gamemanager.h \
+    gameobject.h \
     mainwindow.h
 
 FORMS += \
