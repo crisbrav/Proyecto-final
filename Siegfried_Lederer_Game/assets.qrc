@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/363_full_game-of-rings_0155_preview.mp3</file>
+        <file>assets/drop_bomb.png</file>
+        <file>assets/prisoner_level3.png</file>
+    </qresource>
+</RCC>

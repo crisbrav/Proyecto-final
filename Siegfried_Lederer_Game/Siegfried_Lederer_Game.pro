@@ -13,6 +13,7 @@ SOURCES += \
     bomb.cpp \
     gamemanager.cpp \
     gameobject.cpp \
+    guard.cpp \
     level3.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -23,6 +24,7 @@ HEADERS += \
     bomb.h \
     gamemanager.h \
     gameobject.h \
+    guard.h \
     level3.h \
     mainwindow.h \
     player.h
