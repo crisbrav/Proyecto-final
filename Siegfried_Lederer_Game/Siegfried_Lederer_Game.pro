@@ -17,7 +17,8 @@ SOURCES += \
     level3.cpp \
     main.cpp \
     mainwindow.cpp \
-    player.cpp
+    player.cpp \
+    projectile.cpp
 
 HEADERS += \
     baselevel.h \
@@ -27,7 +28,8 @@ HEADERS += \
     guard.h \
     level3.h \
     mainwindow.h \
-    player.h
+    player.h \
+    projectile.h
 
 FORMS += \
     mainwindow.ui
