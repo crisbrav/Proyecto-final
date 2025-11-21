@@ -1,4 +1,3 @@
-// gameobject.cpp
 #include "gameobject.h"
 
 GameObject::GameObject(QGraphicsItem *parent)
@@ -20,8 +19,7 @@ QPointF GameObject::velocity() const
 
 void GameObject::update(double dt)
 {
-    Q_UNUSED(dt);
-    // Comportamiento por defecto: mover según velocidad lineal
+    // comportamiento por defecto: mover según velocidad lineal
     if (!m_velocity.isNull()) {
         setPos(pos() + m_velocity * dt);
     }

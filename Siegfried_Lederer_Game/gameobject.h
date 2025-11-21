@@ -15,7 +15,8 @@ public:
     void setVelocity(const QPointF &v);
     QPointF velocity() const;
 
-    virtual void update(double dt); // dt en segundos
+    // dt en segundos
+    virtual void update(double dt);
 
 protected:
     QPointF m_velocity;
