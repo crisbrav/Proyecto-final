@@ -12,12 +12,14 @@ SOURCES += \
     gamemanager.cpp \
     gameobject.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    player.cpp
 
 HEADERS += \
     gamemanager.h \
     gameobject.h \
-    mainwindow.h
+    mainwindow.h \
+    player.h
 
 FORMS += \
     mainwindow.ui
