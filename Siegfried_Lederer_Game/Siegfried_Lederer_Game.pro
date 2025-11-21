@@ -13,6 +13,7 @@ SOURCES += \
     bomb.cpp \
     gamemanager.cpp \
     gameobject.cpp \
+    level3.cpp \
     main.cpp \
     mainwindow.cpp \
     player.cpp
@@ -22,6 +23,7 @@ HEADERS += \
     bomb.h \
     gamemanager.h \
     gameobject.h \
+    level3.h \
     mainwindow.h \
     player.h
 
@@ -32,3 +34,11 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    assets.qrc
+
+DISTFILES += \
+    ../../../../Desktop/recursos proyecto final/363_full_game-of-rings_0155_preview.mp3 \
+    ../../../../Desktop/recursos proyecto final/drop_bomb.png \
+    ../../../../Desktop/recursos proyecto final/prisoner_level3.png
