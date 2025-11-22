@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>assets/363_full_game-of-rings_0155_preview.mp3</file>
         <file>assets/drop_bomb.png</file>
-        <file>assets/prisoner_level3.png</file>
+        <file>assets/fondo_level3_800.png</file>
+        <file>assets/prisionero_l3.png</file>
     </qresource>
 </RCC>

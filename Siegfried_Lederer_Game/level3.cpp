@@ -3,6 +3,8 @@
 #include "player.h"
 #include "bomb.h"
 
+
+#include <QGraphicsPixmapItem>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsRectItem>
@@ -41,63 +43,86 @@ Level3::Level3(QWidget *parent)
 
 void Level3::setupScene()
 {
-    const int width = 800;
-    const int height = 600;
-    m_scene->setSceneRect(0, 0, width, height);
+    // Intentar cargar el fondo desde recursos
+    QPixmap bgPixmap(":/assets/fondo_level3_800.png");
 
-    // Fondo simple (luego lo puedes cambiar por sprite)
-    QGraphicsRectItem *background =
-        m_scene->addRect(0, 0, width, height, QPen(Qt::NoPen), QBrush(Qt::darkBlue));
-    background->setZValue(-100);
+    int width = 800;
+    int height = 600;
 
-    // Suelo
-    const int groundHeight = 40;
-    m_groundY = height - groundHeight;
+    if (!bgPixmap.isNull()) {
+        width = bgPixmap.width();
+        height = bgPixmap.height();
+        m_scene->setSceneRect(0, 0, width, height);
 
-    QGraphicsRectItem *ground =
-        m_scene->addRect(0, m_groundY, width, groundHeight,
-                         QPen(Qt::NoPen), QBrush(Qt::darkGreen));
-    ground->setZValue(-50);
+        QGraphicsPixmapItem *bgItem = m_scene->addPixmap(bgPixmap);
+        bgItem->setPos(0, 0);
+        bgItem->setZValue(-100);
+    } else {
+        // Fondo por defecto si falla
+        m_scene->setSceneRect(0, 0, width, height);
+        QGraphicsRectItem *background =
+            m_scene->addRect(0, 0, width, height,
+                             QPen(Qt::NoPen), QBrush(Qt::darkBlue));
+        background->setZValue(-100);
+    }
 
-    // Límites horizontales del jugador
+    // Definimos una altura aproximada de suelo (un poco por encima del borde inferior)
+    m_groundY = height - 90.0;
+
+    // Límites horizontales para el jugador
     m_minX = 20.0;
     m_maxX = width - 20.0;
 
     // ---------- SPRITE SHEET DEL JUGADOR ----------
-    QPixmap sheet(":/assets/prisoner_level3.png");
-    if (sheet.isNull()) {
-        // fallback: sprite amarillo si algo falla
+    // ---------- SPRITE SHEET DEL JUGADOR ----------
+    m_player = new Player();
+
+    // Nuevo sheet: Run.png con una sola fila de frames hacia la derecha
+    QPixmap sheet(":/assets/prisionero_l3.png");
+    QVector<QPixmap> frames;
+
+    if (!sheet.isNull()) {
+        // En la imagen que enviaste hay 9 frames horizontales
+        const int columns = 10;
+        const int frameWidth  = sheet.width() / columns;
+        const int frameHeight = sheet.height();  // una sola fila
+
+        for (int col = 0; col < columns; ++col) {
+            QPixmap frame = sheet.copy(col * frameWidth,
+                                       0,
+                                       frameWidth,
+                                       frameHeight);
+
+            QPixmap scaled = frame.scaled(128, 128,
+                                          Qt::KeepAspectRatio,
+                                          Qt::SmoothTransformation);
+
+            frames.append(scaled);
+        }
+
+        m_player->setAnimationFrames(frames);
+    } else {
+        // Si falla el sprite sheet, usamos un cuadrado amarillo
         QPixmap pm(40, 40);
         pm.fill(Qt::yellow);
-        m_player = new Player();
         m_player->setPixmap(pm);
-    } else {
-        // sprite sheet: 2 filas x 8 columnas (1280 x 256)
-        const int columns = 8;
-        const int rows = 2;
-        const int frameWidth  = sheet.width() / columns;  // 160
-        const int frameHeight = sheet.height() / rows;    // 128
-
-        // cogemos por ahora el primer frame (fila 0, columna 0)
-        QPixmap frame = sheet.copy(0, 0, frameWidth, frameHeight);
-
-        // Escalamos para que encaje en la escena (opcional)
-        QPixmap scaled = frame.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-        m_player = new Player();
-        m_player->setPixmap(scaled);
     }
 
+
     m_player->setZValue(0);
-    // posición inicial sobre el suelo
-    m_player->setPos(width / 2.0 - m_player->pixmap().width() / 2.0,
-                     m_groundY - m_player->pixmap().height());
+
+    // Posición inicial: centrado sobre el "suelo"
+    QPixmap pm = m_player->pixmap();
+    m_player->setPos(width / 2.0 - pm.width() / 2.0,
+                     m_groundY - pm.height());
+
     m_scene->addItem(m_player);
 
     // Ajustar vista
     m_view->setSceneRect(m_scene->sceneRect());
     m_view->setFixedSize(width, height);
 }
+
 
 
 void Level3::resetLevelState()
@@ -147,6 +172,18 @@ void Level3::updateGame()
     double dt = m_fixedDt;
     m_elapsedTime += dt;
 
+    if (m_player) {
+        m_player->update(dt);
+
+        // Limitar dentro de [m_minX, m_maxX]
+        if (m_player->x() < m_minX) {
+            m_player->setX(m_minX);
+        }
+        if (m_player->x() + m_player->pixmap().width() > m_maxX) {
+            m_player->setX(m_maxX - m_player->pixmap().width());
+        }
+    }
+
     // Actualizar bombas (MRUA)
     for (Bomb *bomb : m_bombs) {
         if (bomb) {
@@ -156,7 +193,7 @@ void Level3::updateGame()
 
     checkCollisions();
 
-    // Eliminar bombas que se salen de la pantalla (debajo del suelo)
+    // Eliminar bombas que se salen por abajo
     QList<Bomb*> bombsToRemove;
     for (Bomb *bomb : m_bombs) {
         if (!bomb) continue;
@@ -177,8 +214,8 @@ void Level3::updateGame()
 
         emit levelCompleted();
     }
-
 }
+
 
 void Level3::spawnBomb()
 {
@@ -270,32 +307,69 @@ void Level3::removeBomb(Bomb *bomb)
 
 void Level3::keyPressEvent(QKeyEvent *event)
 {
-    double dt = m_fixedDt;
-
     if (!m_player) {
         BaseLevel::keyPressEvent(event);
+        return;
+    }
+
+    if (event->isAutoRepeat()) {
+        event->ignore();
         return;
     }
 
     switch (event->key()) {
     case Qt::Key_A:
     case Qt::Key_Left:
-        m_player->moveLeft(dt);
+        m_player->setMoveDirection(-1);
+        m_player->startRunning(-1);
         break;
+
     case Qt::Key_D:
     case Qt::Key_Right:
-        m_player->moveRight(dt);
+        m_player->setMoveDirection(1);
+        m_player->startRunning(1);
         break;
+
     default:
         BaseLevel::keyPressEvent(event);
         break;
     }
+}
 
-    // Limitar movimiento del jugador dentro de [m_minX, m_maxX]
-    if (m_player->x() < m_minX) {
-        m_player->setX(m_minX);
+
+void Level3::keyReleaseEvent(QKeyEvent *event)
+{
+    if (!m_player) {
+        BaseLevel::keyReleaseEvent(event);
+        return;
     }
-    if (m_player->x() + m_player->pixmap().width() > m_maxX) {
-        m_player->setX(m_maxX - m_player->pixmap().width());
+
+    if (event->isAutoRepeat()) {
+        event->ignore();
+        return;
+    }
+
+    switch (event->key()) {
+    case Qt::Key_A:
+    case Qt::Key_Left:
+        if (m_player->moveDirection() < 0) {
+            m_player->setMoveDirection(0);
+            m_player->stopRunning();
+        }
+        break;
+
+    case Qt::Key_D:
+    case Qt::Key_Right:
+        if (m_player->moveDirection() > 0) {
+            m_player->setMoveDirection(0);
+            m_player->stopRunning();
+        }
+        break;
+
+    default:
+        BaseLevel::keyReleaseEvent(event);
+        break;
     }
 }
+
+

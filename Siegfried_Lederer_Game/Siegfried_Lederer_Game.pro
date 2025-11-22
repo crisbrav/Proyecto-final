@@ -1,4 +1,4 @@
-QT       += core gui
+QT += widgets gui core multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,9 +14,12 @@ SOURCES += \
     gamemanager.cpp \
     gameobject.cpp \
     guard.cpp \
+    level1.cpp \
+    level2.cpp \
     level3.cpp \
     main.cpp \
     mainwindow.cpp \
+    movingtrap.cpp \
     player.cpp \
     projectile.cpp
 
@@ -26,8 +29,11 @@ HEADERS += \
     gamemanager.h \
     gameobject.h \
     guard.h \
+    level1.h \
+    level2.h \
     level3.h \
     mainwindow.h \
+    movingtrap.h \
     player.h \
     projectile.h
 

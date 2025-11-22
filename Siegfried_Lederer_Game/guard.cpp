@@ -1,7 +1,7 @@
 // guard.cpp
 #include "guard.h"
 #include "player.h"
-#include "mazegrid.h"
+//#include "mazegrid.h"
 
 Guard::Guard(QGraphicsItem *parent)
     : GameObject(parent),

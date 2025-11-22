@@ -1,26 +1,22 @@
-// mainwindow.cpp
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 #include "gamemanager.h"
-#include "level1.h"
-#include "level2.h"
 #include "level3.h"
 
 #include <QStackedWidget>
-#include <QDebug>
+#include <QPushButton>
+#include <QMessageBox>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
     ui(new Ui::MainWindow),
     m_gameManager(new GameManager(this)),
-    m_level1(nullptr),
-    m_level2(nullptr),
-    m_level3(nullptr)
+    m_level3(0)
 {
     ui->setupUi(this);
 
-    setupLevels();
+    setupLevel3();
     setupConnections();
     showMainMenu();
 }
@@ -30,57 +26,59 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-GameManager *MainWindow::getGameManager() const
+void MainWindow::setupLevel3()
 {
-    return m_gameManager;
-}
-
-void MainWindow::setupLevels()
-{
-    // Aquí asumes que en el .ui tienes un QStackedWidget llamado stackedWidget
-    // y una página para el menú principal (index 0).
-
-    m_level1 = new Level1(this);
-    m_level2 = new Level2(this);
+    // Crea el widget del nivel 3 y lo agrega al stackedWidget
     m_level3 = new Level3(this);
 
-    ui->stackedWidget->addWidget(m_level1); // index 1
-    ui->stackedWidget->addWidget(m_level2); // index 2
-    ui->stackedWidget->addWidget(m_level3); // index 3
+    // Se asume que la página 0 del stackedWidget es el menú principal
+    ui->stackedWidget->addWidget(m_level3);   // será, por ejemplo, el índice 1
 }
 
 void MainWindow::setupConnections()
 {
-    // Botones del menú (ajusta los nombres a lo que pongas en Qt Designer)
-    connect(ui->btnPlay, &QPushButton::clicked, this, &MainWindow::onPlayClicked);
-    connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onExitClicked);
+    // Botones del menú (ajusta los nombres si son distintos en tu .ui)
+    connect(ui->btnPlay, &QPushButton::clicked,
+            this, &MainWindow::onPlayClicked);
 
-    // Señales de niveles
-    connect(m_level1, &Level1::levelCompleted, this, &MainWindow::onLevelCompleted);
-    connect(m_level1, &Level1::levelFailed, this, &MainWindow::onLevelFailed);
+    connect(ui->btnExit, &QPushButton::clicked,
+            this, &MainWindow::onExitClicked);
 
-    connect(m_level2, &Level2::levelCompleted, this, &MainWindow::onLevelCompleted);
-    connect(m_level2, &Level2::levelFailed, this, &MainWindow::onLevelFailed);
+    // Señales del nivel 3
+    if (m_level3) {
+        connect(m_level3, &Level3::levelCompleted,
+                this, &MainWindow::onLevel3Completed);
 
-    connect(m_level3, &Level3::levelCompleted, this, &MainWindow::onLevelCompleted);
-    connect(m_level3, &Level3::levelFailed, this, &MainWindow::onLevelFailed);
+        connect(m_level3, &Level3::levelFailed,
+                this, &MainWindow::onLevel3Failed);
+    }
 }
 
 void MainWindow::showMainMenu()
 {
+    // Se asume que la página 0 del stackedWidget es el menú
     ui->stackedWidget->setCurrentIndex(0);
 }
 
-void MainWindow::showLevel(int levelIndex)
+void MainWindow::showLevel3()
 {
-    ui->stackedWidget->setCurrentIndex(levelIndex);
+    if (!m_level3)
+        return;
+
+    ui->stackedWidget->setCurrentWidget(m_level3);
 }
 
 void MainWindow::onPlayClicked()
 {
-    m_gameManager->startLevel(1);
-    m_level1->startLevel();
-    showLevel(1);
+    // Indica al GameManager que estás en el nivel 3 (si lo quieres usar)
+    m_gameManager->startLevel(3);
+
+    // Inicia la lógica del nivel 3
+    if (m_level3) {
+        m_level3->startLevel();
+    }
+
+    showLevel3();
 }
 
 void MainWindow::onExitClicked()
@@ -88,27 +86,16 @@ void MainWindow::onExitClicked()
     close();
 }
 
-void MainWindow::onLevelCompleted()
+void MainWindow::onLevel3Completed()
 {
-    int current = m_gameManager->getCurrentLevel();
-    if (current == 1) {
-        m_gameManager->startLevel(2);
-        m_level2->startLevel();
-        showLevel(2);
-    } else if (current == 2) {
-        m_gameManager->startLevel(3);
-        m_level3->startLevel();
-        showLevel(3);
-    } else if (current == 3) {
-        // TODO: mostrar pantalla de victoria final y volver al menú
-        qDebug() << "Juego completado!";
-        showMainMenu();
-    }
+    QMessageBox::information(this, tr("Nivel completado"),
+                             tr("¡Has sobrevivido al bombardeo!"));
+    showMainMenu();
 }
 
-void MainWindow::onLevelFailed()
+void MainWindow::onLevel3Failed()
 {
-    // TODO: mostrar mensaje de Game Over y volver al menú o reintentar
-    qDebug() << "Nivel fallado";
+    QMessageBox::warning(this, tr("Game Over"),
+                         tr("Has perdido todas las vidas."));
     showMainMenu();
 }
