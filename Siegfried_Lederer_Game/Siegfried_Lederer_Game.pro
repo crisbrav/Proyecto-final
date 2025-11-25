@@ -11,6 +11,7 @@ CONFIG += c++17
 SOURCES += \
     baselevel.cpp \
     bomb.cpp \
+    explosion.cpp \
     gamemanager.cpp \
     gameobject.cpp \
     guard.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
 HEADERS += \
     baselevel.h \
     bomb.h \
+    explosion.h \
     gamemanager.h \
     gameobject.h \
     guard.h \
