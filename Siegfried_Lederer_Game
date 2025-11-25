@@ -1,0 +1,53 @@
+#ifndef LEVEL1_H
+#define LEVEL1_H
+
+#include "baselevel.h"
+#include <QList>
+#include <QTimer>
+
+class Player;
+class Guard;
+class MazeGrid;
+class QGraphicsRectItem;
+class QMediaPlayer;
+class QAudioOutput;
+
+class Level1 : public BaseLevel
+{
+    Q_OBJECT
+
+public:
+    explicit Level1(QWidget *parent = nullptr);
+
+    void startLevel() override;
+
+protected slots:
+    void updateGame() override;
+    void checkGuardAggro();
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+
+private:
+    Player *m_player;
+    QList<Guard*> m_guards;
+    MazeGrid *m_grid;
+
+    QTimer *m_aggroCheckTimer;
+    QGraphicsRectItem *m_goalItem;
+
+    double m_elapsedTime;
+    int m_lives;
+
+    QMediaPlayer *m_bgm;
+    QAudioOutput *m_audioOutput;
+
+    void setupScene();
+    void setupMaze();
+    void checkCollisions();
+    void checkGoalReached();
+    void resetPlayerPosition();
+};
+
+#endif // LEVEL1_H
