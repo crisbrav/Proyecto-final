@@ -13,30 +13,44 @@ class Guard : public GameObject
     Q_OBJECT
 
 public:
-    explicit Guard(QGraphicsItem *parent = nullptr);
+    explicit Guard(MazeGrid *grid, QGraphicsItem *parent = 0);
 
     void setBaseSpeed(double speed);
-    void setGrid(MazeGrid *grid);
-
-    void perceive(const Player *player);
-    void planPath(const QPoint &startCell, const QPoint &targetCell);
-    void act(double dt);
-    void learn(); // aumenta velocidad según veces que ha visto al jugador
+    void setVisionRange(double rangePixels);
+    void setPatrolPath(const QVector<QPoint> &cells);
+    void setCurrentCell(const QPoint &cell);
 
     int timesSeenPlayer() const;
 
-    void update(double dt) override;
+    // IA: se llama desde el nivel en cada frame
+    void updateAI(const Player *player, double dt);
 
 private:
-    double m_baseSpeed;
-    double m_currentSpeed;
-    int m_timesSeenPlayer;
+    enum State {
+        Patrol,
+        Chase
+    };
 
     MazeGrid *m_grid;
-    QVector<QPoint> m_route; // camino de celdas
-    int m_currentRouteIndex;
+    State m_state;
+
+    double m_baseSpeed;
+    double m_currentSpeed;
+    double m_visionRange;
+    int m_timesSeenPlayer;
+
+    QVector<QPoint> m_patrolPath;
+    int m_patrolIndex;
+
+    QVector<QPoint> m_route;
+    int m_routeIndex;
+
+    QPoint m_currentCell;
+
+    bool canSeePlayer(const Player *player) const;
+    void followRoute(double dt);
+    void moveTowardsCell(const QPoint &cell, double dt);
+    void learn();
 };
-
-
 
 #endif // GUARD_H
