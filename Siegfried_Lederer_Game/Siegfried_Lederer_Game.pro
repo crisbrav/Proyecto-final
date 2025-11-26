@@ -20,6 +20,7 @@ SOURCES += \
     level3.cpp \
     main.cpp \
     mainwindow.cpp \
+    mazegrid.cpp \
     movingtrap.cpp \
     player.cpp \
     projectile.cpp
@@ -35,6 +36,7 @@ HEADERS += \
     level2.h \
     level3.h \
     mainwindow.h \
+    mazegrid.h \
     movingtrap.h \
     player.h \
     projectile.h
