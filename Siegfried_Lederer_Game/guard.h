@@ -14,6 +14,8 @@ class Guard : public GameObject
     Q_OBJECT
 
 public:
+    void resetAI();   // reinicia estado (para cuando empieza el nivel)
+
     explicit Guard(MazeGrid *grid, QGraphicsItem *parent = 0);
 
     void setBaseSpeed(double speed);
@@ -45,6 +47,8 @@ private:
     MazeGrid *m_grid;
     State m_state;
     Direction m_dir;
+
+    bool hasLineOfSight(const QPoint &from, const QPoint &to) const;  // LOS con paredes
 
     double m_baseSpeed;
     double m_currentSpeed;

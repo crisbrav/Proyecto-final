@@ -44,7 +44,7 @@ void Level1::loadPlayerSprites()
         int fh = frontSheet.height();
         for (int i = 0; i < framesPerStrip; ++i) {
             QPixmap f = frontSheet.copy(i * fw, 0, fw, fh)
-            .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            .scaled(80, 80, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             m_playerDownFrames.append(f);
         }
     }
@@ -56,7 +56,7 @@ void Level1::loadPlayerSprites()
         int fh = backSheet.height();
         for (int i = 0; i < framesPerStrip; ++i) {
             QPixmap f = backSheet.copy(i * fw, 0, fw, fh)
-            .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            .scaled(80, 80, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             m_playerUpFrames.append(f);
         }
     }
@@ -68,7 +68,7 @@ void Level1::loadPlayerSprites()
         int fh = sideSheet.height();
         for (int i = 0; i < framesPerStrip; ++i) {
             QPixmap right = sideSheet.copy(i * fw, 0, fw, fh)
-            .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            .scaled(80, 80, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             m_playerRightFrames.append(right);
 
             QPixmap left = right.transformed(QTransform().scale(-1.0, 1.0));
@@ -113,40 +113,52 @@ void Level1::setupScene()
     // Crear guardias
     QVector<QPoint> guardCells = m_grid->guardStartCells();
 
-    // Añadimos dos posiciones extra manualmente en celdas caminables
-    // (ajusta si quieres otros sitios)
-    QPoint extra1(1, 3);   // pasillo cerca del inicio
+    // Guardias extra lejos del inicio
+    QPoint extra1(5, 13);   // fila 13, columna 5 (pasillo amplio al fondo)
     if (m_grid->isWalkable(extra1))
         guardCells.append(extra1);
 
-    QPoint extra2(10, 9);  // otro pasillo más abajo
+    QPoint extra2(15, 9);   // otro pasillo más al centro
     if (m_grid->isWalkable(extra2))
         guardCells.append(extra2);
 
-    QPixmap guardSheet(":/assets/guard_l1.png");
 
+    QPixmap guardSheet(":/assets/guard_l1.png");
 
     for (int i = 0; i < guardCells.size(); ++i) {
         Guard *g = new Guard(m_grid);
-        g->setBaseSpeed(15.0);
+        g->setBaseSpeed(60.0);
         g->setVisionRange(6 * cellSize);
 
         if (!guardSheet.isNull())
             g->loadSpriteSheet(guardSheet);
         else {
-            QPixmap gpm(24, 24);
+            QPixmap gpm(48, 48);
             gpm.fill(Qt::red);
             g->setPixmap(gpm);
         }
 
         g->setCurrentCell(guardCells[i]);
 
-        // ruta de patrulla simple
+        // ruta de patrulla: celda origen + una vecina caminable
         QVector<QPoint> patrol;
         patrol.append(guardCells[i]);
-        QPoint right(guardCells[i].x() + 2, guardCells[i].y());
-        if (m_grid->isWalkable(right))
-            patrol.append(right);
+
+        QPoint base = guardCells[i];
+        QPoint candidates[4] = {
+            QPoint(base.x() + 2, base.y()),
+            QPoint(base.x() - 2, base.y()),
+            QPoint(base.x(),     base.y() + 2),
+            QPoint(base.x(),     base.y() - 2)
+        };
+
+        for (int k = 0; k < 4; ++k) {
+            if (m_grid->isWalkable(candidates[k])) {
+                patrol.append(candidates[k]);
+                break;
+            }
+        }
+
         g->setPatrolPath(patrol);
 
         g->setZValue(10);
@@ -236,6 +248,7 @@ void Level1::resetLevelState()
         Guard *g = m_guards[i];
         if (!g) continue;
         g->setBaseSpeed(60.0);
+        g->resetAI();
         g->setCurrentCell(guardCells[i]);
     }
 
@@ -394,7 +407,7 @@ void Level1::setupTraps()
                     cellCenter.y() - trapPixmap.height() / 2.0);
 
     trap->setCenter(basePos);
-    trap->setAmplitude(cs * 1.5); // se mueve ~1.5 celdas
+    trap->setAmplitude(cs * 3.0); // se mueve ~1.5 celdas
     trap->setOmega(2.0);          // +/− frecuencia
 
     trap->setZValue(5);
