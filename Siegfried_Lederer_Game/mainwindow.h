@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 class GameManager;
+class Level1;
 class Level3;
 
 namespace Ui {
@@ -22,6 +23,9 @@ private slots:
     void onPlayClicked();
     void onExitClicked();
 
+    void onLevel1Completed();
+    void onLevel1Failed();
+
     void onLevel3Completed();
     void onLevel3Failed();
 
@@ -29,12 +33,14 @@ private:
     Ui::MainWindow *ui;
 
     GameManager *m_gameManager;
+    Level1 *m_level1;
     Level3 *m_level3;
 
-    void setupLevel3();
+    void setupLevels();
     void setupConnections();
 
     void showMainMenu();
+    void showLevel1();
     void showLevel3();
 };
 

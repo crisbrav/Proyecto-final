@@ -4,6 +4,7 @@
 #include "gameobject.h"
 #include <QVector>
 #include <QPoint>
+#include <QPixmap>
 
 class Player;
 class MazeGrid;
@@ -22,6 +23,9 @@ public:
 
     int timesSeenPlayer() const;
 
+    // Carga el spritesheet completo (guard_l1.png)
+    void loadSpriteSheet(const QPixmap &sheet);
+
     // IA: se llama desde el nivel en cada frame
     void updateAI(const Player *player, double dt);
 
@@ -31,8 +35,16 @@ private:
         Chase
     };
 
+    enum Direction {
+        DirDown,
+        DirRight,
+        DirUp,
+        DirLeft
+    };
+
     MazeGrid *m_grid;
     State m_state;
+    Direction m_dir;
 
     double m_baseSpeed;
     double m_currentSpeed;
@@ -47,10 +59,23 @@ private:
 
     QPoint m_currentCell;
 
+    // animación
+    QVector<QPixmap> m_framesDown;
+    QVector<QPixmap> m_framesRight;
+    QVector<QPixmap> m_framesUp;
+    QVector<QPixmap> m_framesLeft;
+    double m_animTimer;
+    double m_frameDuration;
+    int m_animIndex;
+    bool m_isMoving;
+
     bool canSeePlayer(const Player *player) const;
     void followRoute(double dt);
     void moveTowardsCell(const QPoint &cell, double dt);
     void learn();
+
+    void updateAnimation(double dt);
+    const QVector<QPixmap> &currentFrames() const;
 };
 
 #endif // GUARD_H

@@ -3,13 +3,15 @@
 
 #include "baselevel.h"
 #include <QList>
-#include <QGraphicsRectItem>
 #include <QSet>
+#include <QVector>
+#include <QPixmap>
+#include <QGraphicsRectItem>
 
 class Player;
 class Guard;
 class MazeGrid;
-
+class MovingTrap;
 class Level1 : public BaseLevel
 {
     Q_OBJECT
@@ -28,6 +30,7 @@ protected:
 
 private:
     Player *m_player;
+    QList<MovingTrap*> m_traps;
     QList<Guard*> m_guards;
     MazeGrid *m_grid;
 
@@ -35,10 +38,27 @@ private:
 
     QSet<int> m_keysPressed; // teclas presionadas (WASD)
 
+    // sprites jugador top-down
+    QVector<QPixmap> m_playerDownFrames;
+    QVector<QPixmap> m_playerUpFrames;
+    QVector<QPixmap> m_playerRightFrames;
+    QVector<QPixmap> m_playerLeftFrames;
+
+    double m_playerAnimTimer;
+    double m_playerFrameDuration;
+    int m_playerFrameIndex;
+    enum PlayerDir { PDown, PUp, PLeft, PRight };
+    PlayerDir m_playerDir;
+    bool m_playerMoving;
+
     void setupScene();
     void setupMazeGraphics();
     void resetLevelState();
+
+    void loadPlayerSprites();
+    void setupTraps();
     void updatePlayerMovement(double dt);
+    void updatePlayerAnimation(double dt);
     void updateGuards(double dt);
     void checkCollisions();
 };

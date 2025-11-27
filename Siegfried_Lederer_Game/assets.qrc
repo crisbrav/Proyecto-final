@@ -5,5 +5,13 @@
         <file>assets/fondo_level3_800.png</file>
         <file>assets/prisionero_l3.png</file>
         <file>assets/explosion_l3.png</file>
+        <file>assets/guard_l1.png</file>
+        <file>assets/muro_l1.png</file>
+        <file>assets/prisoner_l1_back.png</file>
+        <file>assets/prisoner_l1_front.png</file>
+        <file>assets/salida_l1.png</file>
+        <file>assets/suelo_l1.png</file>
+        <file>assets/trampa_sinusoidal.png</file>
+        <file>assets/prisoner_l1_sides.png</file>
     </qresource>
 </RCC>

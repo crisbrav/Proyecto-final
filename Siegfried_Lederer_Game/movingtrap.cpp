@@ -1,11 +1,10 @@
-// movingtrap.cpp
 #include "movingtrap.h"
 #include <QtMath>
 
 MovingTrap::MovingTrap(QGraphicsItem *parent)
     : GameObject(parent),
     m_center(0.0, 0.0),
-    m_amplitude(50.0),
+    m_amplitude(40.0),
     m_omega(2.0),
     m_t(0.0)
 {
@@ -14,7 +13,10 @@ MovingTrap::MovingTrap(QGraphicsItem *parent)
 void MovingTrap::setCenter(const QPointF &center)
 {
     m_center = center;
+    m_t = 0.0;        // reinicia el tiempo
+    setPos(m_center);
 }
+
 
 void MovingTrap::setAmplitude(double amplitude)
 {
@@ -30,5 +32,7 @@ void MovingTrap::update(double dt)
 {
     m_t += dt;
     double offset = m_amplitude * qSin(m_omega * m_t);
-    setPos(m_center.x() + offset, m_center.y());
+    // movimiento senoidal VERTICAL
+    setPos(m_center.x(), m_center.y() + offset);
 }
+
