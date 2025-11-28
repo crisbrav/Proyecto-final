@@ -44,7 +44,7 @@ private:
     int m_whiteKeysNeeded;
 
     // --- vidas / corazones ---
-    static const int MAX_LIVES = 3;
+    static const int MAX_LIVES = 5;
     int m_lives;
     QVector<QGraphicsPixmapItem*> m_heartIcons;
     QPixmap m_heartPixmap;

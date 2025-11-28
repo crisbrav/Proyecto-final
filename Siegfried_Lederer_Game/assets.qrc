@@ -16,5 +16,7 @@
         <file>assets/corazon.png</file>
         <file>assets/key-blue.png</file>
         <file>assets/key-white.png</file>
+        <file>assets/quieto_l3.png</file>
+        <file>assets/corazon_l3.png</file>
     </qresource>
 </RCC>

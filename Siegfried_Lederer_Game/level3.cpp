@@ -16,6 +16,7 @@
 #include <QAudioOutput>
 #include <QUrl>
 #include <QtMath>
+#include <QVector>
 
 
 Level3::Level3(QWidget *parent)
@@ -26,13 +27,17 @@ Level3::Level3(QWidget *parent)
     m_elapsedTime(0.0),
     m_totalTime(60.0),
     m_lives(3),
+    m_maxLives(3),
     m_bgm(new QMediaPlayer(this)),
     m_audioOutput(new QAudioOutput(this)),
     m_minX(0.0),
     m_maxX(0.0),
     m_groundY(0.0),
     m_timeText(0),
-    m_livesText(0)
+    m_livesText(0),
+    m_timeBarBg(0),
+    m_timeBarFill(0),
+    m_facingRight(true)
 {
     m_bgm->setAudioOutput(m_audioOutput);
 
@@ -139,18 +144,155 @@ void Level3::setupScene()
 
     m_scene->addItem(m_player);
 
-    m_timeText = m_scene->addText("Tiempo: 60.0");
-    m_timeText->setDefaultTextColor(Qt::white);
-    m_timeText->setZValue(200);
-    m_timeText->setPos(10, 10);
+    loadIdleSprites();
+    if (!m_idleRightFrame.isNull()) {
+        m_player->setPixmap(m_idleRightFrame);
+    }
+    m_facingRight = true;
 
-    m_livesText = m_scene->addText("Vidas: 3");
-    m_livesText->setDefaultTextColor(Qt::white);
-    m_livesText->setZValue(200);
-    m_livesText->setPos(10, 40);
+    // HUD (barra de tiempo + corazones)
+    setupHud();
 
     m_view->setSceneRect(m_scene->sceneRect());
     m_view->setFixedSize(width, height);
+
+}
+
+void Level3::setupHud()
+{
+    const int margin    = 10;
+    const int barWidth  = 220;
+    const int barHeight = 14;
+
+    // Barra de fondo (gris oscuro)
+    m_timeBarBg = m_scene->addRect(margin, margin,
+                                   barWidth, barHeight,
+                                   QPen(Qt::black),
+                                   QBrush(Qt::darkGray));
+    m_timeBarBg->setZValue(190);
+
+    // Barra de relleno (naranja)
+    m_timeBarFill = m_scene->addRect(margin, margin,
+                                     barWidth, barHeight,
+                                     QPen(Qt::NoPen),
+                                     QBrush(QColor(255, 140, 0)));
+    m_timeBarFill->setZValue(191);
+
+    // Texto de tiempo debajo de la barra
+    m_timeText = m_scene->addText("");
+    m_timeText->setDefaultTextColor(Qt::white);
+    m_timeText->setZValue(192);
+    m_timeText->setPos(margin, margin + barHeight + 4);
+
+    // Texto de vidas opcional (bajo los corazones)
+    m_livesText = m_scene->addText("");
+    m_livesText->setDefaultTextColor(Qt::white);
+    m_livesText->setZValue(192);
+
+    // Corazones a la derecha
+    setupHearts();
+
+    updateTimeHUD();
+    updateHeartsHUD();
+}
+
+void Level3::setupHearts()
+{
+    // borrar corazones anteriores si hubiera
+    for (QGraphicsPixmapItem *icon : m_heartIcons) {
+        if (icon) {
+            m_scene->removeItem(icon);
+            delete icon;
+        }
+    }
+    m_heartIcons.clear();
+
+    QPixmap heart(":/assets/corazon.png");
+    if (heart.isNull()) {
+        heart = QPixmap(24, 24);
+        heart.fill(Qt::red);
+    }
+    m_heartPixmap = heart.scaled(24, 24,
+                                 Qt::KeepAspectRatio,
+                                 Qt::SmoothTransformation);
+
+    int spacing = 4;
+    int totalWidth = m_maxLives * m_heartPixmap.width()
+                     + (m_maxLives - 1) * spacing;
+
+
+    QRectF rect = m_scene->sceneRect();
+    int xStart = static_cast<int>(rect.right()) - totalWidth - 200;
+    int y = 5;
+
+    for (int i = 0; i < m_maxLives; ++i) {
+        QGraphicsPixmapItem *icon = m_scene->addPixmap(m_heartPixmap);
+        icon->setZValue(200);
+        icon->setPos(xStart + i * (m_heartPixmap.width() + spacing), y);
+        m_heartIcons.append(icon);
+    }
+
+    // texto de vidas bajo los corazones
+    if (m_livesText) {
+        m_livesText->setPos(xStart, y + m_heartPixmap.height() + 2);
+    }
+}
+
+
+
+
+void Level3::updateHeartsHUD()
+{
+    for (int i = 0; i < m_heartIcons.size(); ++i) {
+        if (m_heartIcons[i])
+            m_heartIcons[i]->setVisible(i < m_lives);
+    }
+
+    if (m_livesText)
+        m_livesText->setPlainText(QString("Vidas: %1").arg(m_lives));
+}
+
+void Level3::updateTimeHUD()
+{
+    if (!m_timeBarBg || !m_timeBarFill || !m_timeText)
+        return;
+
+    double remaining = m_totalTime - m_elapsedTime;
+    if (remaining < 0.0) remaining = 0.0;
+
+    double ratio = (m_totalTime > 0.0) ? (remaining / m_totalTime) : 0.0;
+    if (ratio < 0.0) ratio = 0.0;
+    if (ratio > 1.0) ratio = 1.0;
+
+    QRectF bgRect = m_timeBarBg->rect();
+    double newWidth = bgRect.width() * ratio;
+
+    m_timeBarFill->setRect(bgRect.x(), bgRect.y(),
+                           newWidth, bgRect.height());
+
+    m_timeText->setPlainText(
+        QString("Tiempo: %1 s").arg(remaining, 0, 'f', 1));
+}
+
+
+void Level3::loadIdleSprites()
+{
+    QPixmap idleSheet(":/assets/quieto_l3.png");
+    if (idleSheet.isNull())
+        return;
+
+    const int columns = 12;
+    int fw = idleSheet.width() / columns;
+    int fh = idleSheet.height();
+
+    // Usaremos solo el primer frame como idle
+    QPixmap frame = idleSheet.copy(0, 0, fw, fh)
+                        .scaled(128, 128,
+                                Qt::KeepAspectRatio,
+                                Qt::SmoothTransformation);
+
+    m_idleRightFrame = frame;
+    m_idleLeftFrame  = frame.transformed(QTransform().scale(-1.0, 1.0));
 }
 
 
@@ -177,7 +319,7 @@ void Level3::resetLevelState()
     m_explosions.clear();
 
     m_elapsedTime = 0.0;
-    m_lives = 3;
+    m_lives = m_maxLives;
 
     if (m_player) {
         QPixmap pm = m_player->pixmap();
@@ -187,11 +329,10 @@ void Level3::resetLevelState()
 
     m_bombSpawnTimer->setInterval(800);
 
-    if (m_timeText)
-        m_timeText->setPlainText("Tiempo: 60.0");
-    if (m_livesText)
-        m_livesText->setPlainText("Vidas: 3");
+    updateTimeHUD();
+    updateHeartsHUD();
 }
+
 
 
 void Level3::startLevel()
@@ -274,16 +415,8 @@ void Level3::updateGame()
     }
 
     // actualizar HUD
-    double remaining = m_totalTime - m_elapsedTime;
-    if (remaining < 0.0) remaining = 0.0;
-
-    if (m_timeText)
-        m_timeText->setPlainText(
-            QString("Tiempo: %1").arg(remaining, 0, 'f', 1));
-
-    if (m_livesText)
-        m_livesText->setPlainText(
-            QString("Vidas: %1").arg(m_lives));
+    updateTimeHUD();
+    updateHeartsHUD();
 
     // comprobar fin de nivel
     if (m_elapsedTime >= m_totalTime) {
@@ -359,8 +492,9 @@ void Level3::checkCollisions()
             if (!m_bombsToRemove.contains(bomb))
                 m_bombsToRemove.append(bomb);
 
-            // restar vida
             --m_lives;
+            if (m_lives < 0) m_lives = 0;
+            updateHeartsHUD();
             // TODO: sonido de perder vida
 
             if (m_lives <= 0) {
@@ -404,12 +538,14 @@ void Level3::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Left:
         m_player->setMoveDirection(-1);
         m_player->startRunning(-1);
+        m_facingRight = false;           // NUEVO
         break;
 
     case Qt::Key_D:
     case Qt::Key_Right:
         m_player->setMoveDirection(1);
         m_player->startRunning(1);
+        m_facingRight = true;            // NUEVO
         break;
 
     default:
@@ -437,6 +573,12 @@ void Level3::keyReleaseEvent(QKeyEvent *event)
         if (m_player->moveDirection() < 0) {
             m_player->setMoveDirection(0);
             m_player->stopRunning();
+
+            // sprite quieto
+            if (m_facingRight && !m_idleRightFrame.isNull())
+                m_player->setPixmap(m_idleRightFrame);
+            else if (!m_facingRight && !m_idleLeftFrame.isNull())
+                m_player->setPixmap(m_idleLeftFrame);
         }
         break;
 
@@ -445,8 +587,14 @@ void Level3::keyReleaseEvent(QKeyEvent *event)
         if (m_player->moveDirection() > 0) {
             m_player->setMoveDirection(0);
             m_player->stopRunning();
+
+            if (m_facingRight && !m_idleRightFrame.isNull())
+                m_player->setPixmap(m_idleRightFrame);
+            else if (!m_facingRight && !m_idleLeftFrame.isNull())
+                m_player->setPixmap(m_idleLeftFrame);
         }
         break;
+
 
     default:
         BaseLevel::keyReleaseEvent(event);
