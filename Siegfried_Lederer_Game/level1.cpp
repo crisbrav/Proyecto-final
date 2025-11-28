@@ -23,10 +23,16 @@ Level1::Level1(QWidget *parent)
     m_playerFrameDuration(0.10),
     m_playerFrameIndex(0),
     m_playerDir(PDown),
-    m_playerMoving(false)
+    m_playerMoving(false),
+    m_blueKeysCollected(0),
+    m_whiteKeysCollected(0),
+    m_blueKeysNeeded(2),
+    m_whiteKeysNeeded(2),
+    m_lives(MAX_LIVES)
 {
     setupScene();
 }
+
 
 void Level1::loadPlayerSprites()
 {
@@ -109,7 +115,7 @@ void Level1::setupScene()
                      startCenter.y() - pm.height() / 2.0);
     m_player->setZValue(10);
     m_scene->addItem(m_player);
-
+    m_player->setSpeed(160.0);
     // Crear guardias
     QVector<QPoint> guardCells = m_grid->guardStartCells();
 
@@ -118,7 +124,7 @@ void Level1::setupScene()
     if (m_grid->isWalkable(extra1))
         guardCells.append(extra1);
 
-    QPoint extra2(15, 9);   // otro pasillo más al centro
+    QPoint extra2(15, 14);   // otro pasillo más al centro
     if (m_grid->isWalkable(extra2))
         guardCells.append(extra2);
 
@@ -166,6 +172,8 @@ void Level1::setupScene()
         m_guards.append(g);
     }
 
+    setupKeys();
+    setupHearts();
     setupTraps();
 
     m_view->setSceneRect(m_scene->sceneRect());
@@ -224,6 +232,136 @@ void Level1::setupMazeGraphics()
     }
 }
 
+void Level1::setupKeys()
+{
+    m_keys.clear();
+    m_blueKeysCollected = 0;
+    m_whiteKeysCollected = 0;
+
+    int cs = m_grid->cellSize();
+
+    // --- preparar pixmaps ---
+    QPixmap blueSheet(":/assets/key-blue.png");
+    QPixmap whiteSheet(":/assets/key-white.png");
+
+    const int cols = 12; // la hoja de llaves tiene 12 columnas
+    QPixmap blueKey, whiteKey;
+
+    if (!blueSheet.isNull()) {
+        int fw = blueSheet.width() / cols;
+        int fh = blueSheet.height();
+        blueKey = blueSheet.copy(0, 0, fw, fh)
+                      .scaled(cs - 8, cs - 8,
+                              Qt::KeepAspectRatio,
+                              Qt::SmoothTransformation);
+    } else {
+        blueKey = QPixmap(cs - 8, cs - 8);
+        blueKey.fill(Qt::blue);
+    }
+
+    if (!whiteSheet.isNull()) {
+        int fw = whiteSheet.width() / cols;
+        int fh = whiteSheet.height();
+        whiteKey = whiteSheet.copy(0, 0, fw, fh)
+                       .scaled(cs - 8, cs - 8,
+                               Qt::KeepAspectRatio,
+                               Qt::SmoothTransformation);
+    } else {
+        whiteKey = QPixmap(cs - 8, cs - 8);
+        whiteKey.fill(Qt::white);
+    }
+
+    auto addKeyAt = [this, cs, &blueKey, &whiteKey](const QPoint &cell, bool isBlue)
+    {
+        if (!m_grid->isWalkable(cell))
+            return;
+
+        QPixmap pm = isBlue ? blueKey : whiteKey;
+
+        QGraphicsPixmapItem *item = m_scene->addPixmap(pm);
+        QPointF center = m_grid->cellCenter(cell);
+        item->setPos(center.x() - pm.width() / 2.0,
+                     center.y() - pm.height() / 2.0);
+        item->setZValue(15);
+
+        KeyData kd;
+        kd.item = item;
+        kd.isBlue = isBlue;
+        kd.collected = false;
+        m_keys.append(kd);
+    };
+
+    // --- posiciones elegidas dentro del laberinto (celdas caminables) ---
+    // azul: (2,5) y (17,9)
+    addKeyAt(QPoint(2, 5), true);
+    addKeyAt(QPoint(17, 9), true);
+
+    // blanca: (14,3) y (5,13)
+    addKeyAt(QPoint(14, 3), false);
+    addKeyAt(QPoint(5, 13), false);
+}
+
+void Level1::resetKeys()
+{
+    m_blueKeysCollected = 0;
+    m_whiteKeysCollected = 0;
+
+    for (int i = 0; i < m_keys.size(); ++i) {
+        m_keys[i].collected = false;
+        if (m_keys[i].item)
+            m_keys[i].item->setVisible(true);
+    }
+}
+
+void Level1::setupHearts()
+{
+    // borrar corazones anteriores si los hubiera (por si recargas escena)
+    for (int i = 0; i < m_heartIcons.size(); ++i) {
+        QGraphicsPixmapItem *it = m_heartIcons[i];
+        if (it) {
+            m_scene->removeItem(it);
+            delete it;
+        }
+    }
+    m_heartIcons.clear();
+
+    QPixmap heart(":/assets/corazon.png");
+    if (heart.isNull()) {
+        heart = QPixmap(24, 24);
+        heart.fill(Qt::red);
+    }
+    m_heartPixmap = heart.scaled(24, 24,
+                                 Qt::KeepAspectRatio,
+                                 Qt::SmoothTransformation);
+
+    int spacing = 4;
+    int totalWidth = MAX_LIVES * m_heartPixmap.width()
+                     + (MAX_LIVES - 1) * spacing;
+
+    int xStart = static_cast<int>(m_scene->width()) - totalWidth - 10;
+    int y = 5;
+
+    for (int i = 0; i < MAX_LIVES; ++i) {
+        QGraphicsPixmapItem *icon = m_scene->addPixmap(m_heartPixmap);
+        icon->setZValue(200);
+        icon->setPos(xStart + i * (m_heartPixmap.width() + spacing), y);
+        m_heartIcons.append(icon);
+    }
+
+    m_lives = MAX_LIVES;
+    updateHeartsHUD();
+}
+
+void Level1::updateHeartsHUD()
+{
+    for (int i = 0; i < m_heartIcons.size(); ++i) {
+        if (m_heartIcons[i])
+            m_heartIcons[i]->setVisible(i < m_lives);
+    }
+}
+
+
+
 void Level1::resetLevelState()
 {
     m_keysPressed.clear();
@@ -251,6 +389,10 @@ void Level1::resetLevelState()
         g->resetAI();
         g->setCurrentCell(guardCells[i]);
     }
+
+    resetKeys();
+    m_lives = MAX_LIVES;
+    updateHeartsHUD();
 
 }
 
@@ -340,16 +482,51 @@ void Level1::checkCollisions()
     if (!m_player || !m_grid)
         return;
 
-    // guardias
+    // colisión con guardias
     for (int i = 0; i < m_guards.size(); ++i) {
         Guard *g = m_guards[i];
         if (!g) continue;
+
         if (g->collidesWithItem(m_player)) {
-            stopLevel();
-            emit levelFailed();
-            return;
+            // perder una vida
+            --m_lives;
+            if (m_lives < 0) m_lives = 0;
+            updateHeartsHUD();
+
+            if (m_lives <= 0) {
+                stopLevel();
+                emit levelFailed();
+                return;
+            } else {
+                // reposicionar jugador al inicio
+                QPoint startCell = m_grid->playerStartCell();
+                QPointF startCenter = m_grid->cellCenter(startCell);
+                QPixmap pm = m_player->pixmap();
+                m_player->setPos(startCenter.x() - pm.width() / 2.0,
+                                 startCenter.y() - pm.height() / 2.0);
+                // salimos para no procesar más colisiones este frame
+                return;
+            }
         }
     }
+
+    // recoger llaves
+    for (int i = 0; i < m_keys.size(); ++i) {
+        KeyData &k = m_keys[i];
+        if (!k.item || k.collected)
+            continue;
+
+        if (k.item->collidesWithItem(m_player)) {
+            k.collected = true;
+            k.item->setVisible(false);
+
+            if (k.isBlue)
+                ++m_blueKeysCollected;
+            else
+                ++m_whiteKeysCollected;
+        }
+    }
+
 
     // colisión con trampas oscilatorias
     for (int i = 0; i < m_traps.size(); ++i) {
@@ -369,10 +546,14 @@ void Level1::checkCollisions()
                                m_player->pixmap().height() / 2.0);
     QPoint cell = m_grid->sceneToCell(center);
 
-    if (cell == m_grid->exitCell()) {
+    bool hasAllKeys = (m_blueKeysCollected >= m_blueKeysNeeded &&
+                       m_whiteKeysCollected >= m_whiteKeysNeeded);
+
+    if (cell == m_grid->exitCell() && hasAllKeys) {
         stopLevel();
         emit levelCompleted();
     }
+
 }
 
 void Level1::setupTraps()
@@ -407,8 +588,8 @@ void Level1::setupTraps()
                     cellCenter.y() - trapPixmap.height() / 2.0);
 
     trap->setCenter(basePos);
-    trap->setAmplitude(cs * 3.0); // se mueve ~1.5 celdas
-    trap->setOmega(2.0);          // +/− frecuencia
+    trap->setAmplitude(cs * 1.0); // se mueve ~1.5 celdas
+    trap->setOmega(3.0);          // +/− frecuencia
 
     trap->setZValue(5);
     m_scene->addItem(trap);

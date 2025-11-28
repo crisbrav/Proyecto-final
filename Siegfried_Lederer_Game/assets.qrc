@@ -13,5 +13,8 @@
         <file>assets/suelo_l1.png</file>
         <file>assets/trampa_sinusoidal.png</file>
         <file>assets/prisoner_l1_sides.png</file>
+        <file>assets/corazon.png</file>
+        <file>assets/key-blue.png</file>
+        <file>assets/key-white.png</file>
     </qresource>
 </RCC>

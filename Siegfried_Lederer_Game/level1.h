@@ -29,6 +29,27 @@ protected:
     void keyReleaseEvent(QKeyEvent *event) override;
 
 private:
+
+    struct KeyData {
+        QGraphicsPixmapItem *item;
+        bool isBlue;
+        bool collected;
+    };
+
+    // --- llaves ---
+    QVector<KeyData> m_keys;
+    int m_blueKeysCollected;
+    int m_whiteKeysCollected;
+    int m_blueKeysNeeded;
+    int m_whiteKeysNeeded;
+
+    // --- vidas / corazones ---
+    static const int MAX_LIVES = 3;
+    int m_lives;
+    QVector<QGraphicsPixmapItem*> m_heartIcons;
+    QPixmap m_heartPixmap;
+
+
     Player *m_player;
     QList<MovingTrap*> m_traps;
     QList<Guard*> m_guards;
@@ -50,6 +71,12 @@ private:
     enum PlayerDir { PDown, PUp, PLeft, PRight };
     PlayerDir m_playerDir;
     bool m_playerMoving;
+
+    void setupKeys();
+    void resetKeys();
+    void setupHearts();
+    void updateHeartsHUD();
+
 
     void setupScene();
     void setupMazeGraphics();
