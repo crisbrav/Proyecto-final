@@ -18,5 +18,9 @@
         <file>assets/key-white.png</file>
         <file>assets/quieto_l3.png</file>
         <file>assets/corazon_l3.png</file>
+        <file>assets/Fondo_l2.png</file>
+        <file>assets/obstaculo_l2.png</file>
+        <file>assets/proyectil_l2.png</file>
+        <file>assets/tanque_l2.png</file>
     </qresource>
 </RCC>

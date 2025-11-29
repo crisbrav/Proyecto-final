@@ -5,6 +5,7 @@
 
 class GameManager;
 class Level1;
+class Level2;   // ← NUEVO
 class Level3;
 
 namespace Ui {
@@ -26,6 +27,9 @@ private slots:
     void onLevel1Completed();
     void onLevel1Failed();
 
+    void onLevel2Completed();   // ← NUEVO
+    void onLevel2Failed();      // ← NUEVO
+
     void onLevel3Completed();
     void onLevel3Failed();
 
@@ -34,6 +38,7 @@ private:
 
     GameManager *m_gameManager;
     Level1 *m_level1;
+    Level2 *m_level2;   // ← NUEVO
     Level3 *m_level3;
 
     void setupLevels();
@@ -41,6 +46,7 @@ private:
 
     void showMainMenu();
     void showLevel1();
+    void showLevel2();  // ← NUEVO
     void showLevel3();
 };
 

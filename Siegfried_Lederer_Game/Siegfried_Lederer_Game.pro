@@ -15,6 +15,7 @@ SOURCES += \
     gamemanager.cpp \
     gameobject.cpp \
     guard.cpp \
+    laneobstacle.cpp \
     level1.cpp \
     level2.cpp \
     level3.cpp \
@@ -23,7 +24,8 @@ SOURCES += \
     mazegrid.cpp \
     movingtrap.cpp \
     player.cpp \
-    projectile.cpp
+    projectile.cpp \
+    tankprojectile.cpp
 
 HEADERS += \
     baselevel.h \
@@ -32,6 +34,7 @@ HEADERS += \
     gamemanager.h \
     gameobject.h \
     guard.h \
+    laneobstacle.h \
     level1.h \
     level2.h \
     level3.h \
@@ -39,7 +42,8 @@ HEADERS += \
     mazegrid.h \
     movingtrap.h \
     player.h \
-    projectile.h
+    projectile.h \
+    tankprojectile.h
 
 FORMS += \
     mainwindow.ui
