@@ -108,7 +108,7 @@ void Level3::setupScene()
     QVector<QPixmap> frames;
 
     if (!sheet.isNull()) {
-        // En la imagen que enviaste hay 9 frames horizontales
+
         const int columns = 10;
         const int frameWidth  = sheet.width() / columns;
         const int frameHeight = sheet.height();  // una sola fila
@@ -287,7 +287,7 @@ void Level3::loadIdleSprites()
 
     // Usaremos solo el primer frame como idle
     QPixmap frame = idleSheet.copy(0, 0, fw, fh)
-                        .scaled(128, 128,
+                        .scaled(148, 148,
                                 Qt::KeepAspectRatio,
                                 Qt::SmoothTransformation);
 

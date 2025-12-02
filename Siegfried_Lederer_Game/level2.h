@@ -58,6 +58,20 @@ private:
     QList<TankProjectile*>  m_projectiles;
     QTimer                 *m_obstacleTimer;
     QTimer                 *m_projectileTimer;
+    struct ProjectileInfo {
+        QGraphicsPixmapItem *indicator; // mira
+        double impactY;                 // altura donde debe explotar
+    };
+
+    QHash<TankProjectile*, ProjectileInfo> m_projectileInfos;
+
+    // Fondo desplazable
+    QGraphicsPixmapItem *m_bg1;
+    QGraphicsPixmapItem *m_bg2;
+    double m_bgScrollSpeed;   // píxeles/segundo
+
+    void updateBackground(double dt);
+
 
     // --- Tanque ---
     QGraphicsPixmapItem *m_tankItem;

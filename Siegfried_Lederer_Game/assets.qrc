@@ -31,5 +31,7 @@
         <file>assets/img_complet_l3.jpg</file>
         <file>assets/img_gameover.jpg</file>
         <file>assets/salida_boton.png</file>
+        <file>assets/mira.png</file>
+        <file>assets/fondo_largo_l2.png</file>
     </qresource>
 </RCC>
