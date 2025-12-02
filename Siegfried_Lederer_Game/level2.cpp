@@ -435,7 +435,11 @@ void Level2::checkCollisions()
     QList<LaneObstacle*> obsToRemove;
     for (LaneObstacle *obs : m_obstacles) {
         if (!obs) continue;
-        if (obs->collidesWithItem(m_player)) {
+
+        // Solo colisiona si está en el MISMO carril
+        if (obs->laneIndex() == m_currentLaneIndex &&
+            obs->collidesWithItem(m_player)) {
+
             obsToRemove.append(obs);
             --m_lives;
         }
@@ -477,23 +481,22 @@ void Level2::spawnObstacle()
     if (!m_player || m_laneBaseY.isEmpty())
         return;
 
-    // Obstáculo de alambre de púas
     QPixmap trapPixmap(":/assets/obstaculo_l2.png");
     if (trapPixmap.isNull()) {
         trapPixmap = QPixmap(50, 50);
         trapPixmap.fill(Qt::red);
     }
 
-    QPixmap scaled = trapPixmap.scaled(80, 80,
+    QPixmap scaled = trapPixmap.scaled(110, 110,
                                        Qt::KeepAspectRatio,
                                        Qt::SmoothTransformation);
-
-    LaneObstacle *obs = new LaneObstacle(220.0); // velocidad hacia la izquierda
-    obs->setPixmap(scaled);
 
     int lane = QRandomGenerator::global()->bounded(m_laneBaseY.size());
     double baseY = m_laneBaseY[lane];
     double y = baseY - scaled.height();
+
+    LaneObstacle *obs = new LaneObstacle(220.0, lane);
+    obs->setPixmap(scaled);
 
     double startX = m_scene->sceneRect().right() + 20.0;
     obs->setPos(startX, y);
@@ -502,6 +505,7 @@ void Level2::spawnObstacle()
     m_scene->addItem(obs);
     m_obstacles.append(obs);
 }
+
 
 void Level2::spawnProjectile()
 {
@@ -518,28 +522,50 @@ void Level2::spawnProjectile()
                                        Qt::KeepAspectRatio,
                                        Qt::SmoothTransformation);
 
-    // Proyectil con trayectoria parabólica
-    // vx > 0 hacia la derecha, vy < 0 hacia arriba
-    double vx = 280.0;
-    double vy = -220.0;
-    double g  = 420.0;
+    // --- Elegir carril objetivo ---
+    int lane = QRandomGenerator::global()->bounded(m_laneBaseY.size());
+    double baseY = m_laneBaseY[lane];
+    double targetY = baseY - scaled.height() + 5.0; // un poco por encima de la base
+
+    // --- Posición inicial desde el tanque ---
+    double startX;
+    double startY;
+
+    if (m_tankItem) {
+        // boca del cañón aproximada (lado derecho del tanque)
+        startX = m_tankItem->x() + m_tankItem->pixmap().width() - scaled.width() * 0.3;
+        // algo por encima de la mitad vertical del tanque
+        startY = m_tankItem->y() + m_tankItem->pixmap().height() * 0.35;
+    } else {
+        startX = m_scene->sceneRect().left() + 40.0;
+        startY = m_roadTopY - scaled.height() - 20.0;
+    }
+
+    // --- Elegir punto X donde queremos que caiga (cerca del jugador) ---
+    double targetXCenter = m_fixedPlayerX + 40.0;
+    double spread = 60.0;  // dispersión horizontal
+
+    // Usamos bounded(double high) ∈ [0, high) y luego centramos en [-spread, spread)
+    double offset = QRandomGenerator::global()->bounded(2.0 * spread) - spread;
+    double targetX = targetXCenter + offset;
+
+
+    // --- Parámetros de la parábola ---
+    double g = 420.0;
+    double T = 1.1; // tiempo de vuelo aproximado en segundos
+
+    double vx = (targetX - startX) / T;
+    double vy = (targetY - startY - 0.5 * g * T * T) / T;
 
     TankProjectile *proj = new TankProjectile(vx, vy, g);
     proj->setPixmap(scaled);
-
-    int lane = QRandomGenerator::global()->bounded(m_laneBaseY.size());
-    double baseY = m_laneBaseY[lane];
-    double y = baseY - scaled.height();
-
-    double startX = (m_tankItem
-                         ? m_tankItem->x() + m_tankItem->pixmap().width()
-                         : m_scene->sceneRect().left() + 40.0);
-    proj->setPos(startX, y - 40.0);  // un poco por encima del carril
+    proj->setPos(startX, startY);
     proj->setZValue(-1);
 
     m_scene->addItem(proj);
     m_projectiles.append(proj);
 }
+
 
 void Level2::clearObstacles()
 {

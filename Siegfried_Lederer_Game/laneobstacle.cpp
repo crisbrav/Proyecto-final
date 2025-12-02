@@ -1,8 +1,9 @@
 #include "laneobstacle.h"
 
-LaneObstacle::LaneObstacle(double speed, QGraphicsItem *parent)
+LaneObstacle::LaneObstacle(double speed, int laneIndex, QGraphicsItem *parent)
     : QGraphicsPixmapItem(parent),
-    m_speed(speed)
+    m_speed(speed),
+    m_laneIndex(laneIndex)
 {
 }
 
@@ -16,8 +17,17 @@ double LaneObstacle::speed() const
     return m_speed;
 }
 
+void LaneObstacle::setLaneIndex(int laneIndex)
+{
+    m_laneIndex = laneIndex;
+}
+
+int LaneObstacle::laneIndex() const
+{
+    return m_laneIndex;
+}
+
 void LaneObstacle::update(double dt)
 {
-    // Se desplaza hacia la izquierda
     setX(x() - m_speed * dt);
 }

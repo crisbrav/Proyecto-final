@@ -22,5 +22,14 @@
         <file>assets/obstaculo_l2.png</file>
         <file>assets/proyectil_l2.png</file>
         <file>assets/tanque_l2.png</file>
+        <file>assets/boton_l1.png</file>
+        <file>assets/boton_l2.png</file>
+        <file>assets/boton_l3.png</file>
+        <file>assets/imagen_fondo_botones.jpg</file>
+        <file>assets/img_complet_l1.png</file>
+        <file>assets/img_complet_l2.png</file>
+        <file>assets/img_complet_l3.jpg</file>
+        <file>assets/img_gameover.jpg</file>
+        <file>assets/salida_boton.png</file>
     </qresource>
 </RCC>

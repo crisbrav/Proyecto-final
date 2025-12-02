@@ -18,10 +18,13 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>9</y>
+      <y>0</y>
       <width>781</width>
       <height>561</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-image: url(:/assets/imagen_fondo_botones.jpg);</string>
     </property>
     <property name="currentIndex">
      <number>0</number>
@@ -30,27 +33,113 @@
      <widget class="QPushButton" name="btnPlay">
       <property name="geometry">
        <rect>
-        <x>280</x>
-        <y>190</y>
-        <width>90</width>
-        <height>29</height>
+        <x>110</x>
+        <y>170</y>
+        <width>111</width>
+        <height>71</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">border: none;
+background: transparent;
+</string>
+      </property>
       <property name="text">
-       <string>Jugar</string>
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="assets.qrc">
+        <normaloff>:/assets/boton_l1.png</normaloff>:/assets/boton_l1.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>128</width>
+        <height>128</height>
+       </size>
       </property>
      </widget>
      <widget class="QPushButton" name="btnExit">
       <property name="geometry">
        <rect>
-        <x>420</x>
-        <y>190</y>
-        <width>90</width>
-        <height>29</height>
+        <x>320</x>
+        <y>450</y>
+        <width>121</width>
+        <height>61</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">border: none;
+background: transparent;
+</string>
+      </property>
       <property name="text">
-       <string>Salir</string>
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="assets.qrc">
+        <normaloff>:/assets/salida_boton.png</normaloff>:/assets/salida_boton.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>121</width>
+        <height>120</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnLevel2">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>170</y>
+        <width>111</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: none;
+background: transparent;
+</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="assets.qrc">
+        <normaloff>:/assets/boton_l2.png</normaloff>:/assets/boton_l2.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>128</width>
+        <height>128</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnLevel3">
+      <property name="geometry">
+       <rect>
+        <x>530</x>
+        <y>170</y>
+        <width>111</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: none;
+background: transparent;
+</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="assets.qrc">
+        <normaloff>:/assets/boton_l3.png</normaloff>:/assets/boton_l3.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>128</width>
+        <height>128</height>
+       </size>
       </property>
      </widget>
     </widget>
@@ -69,6 +158,8 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="assets.qrc"/>
+ </resources>
  <connections/>
 </ui>
