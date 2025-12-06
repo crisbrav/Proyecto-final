@@ -119,7 +119,7 @@ void Level2::setupScene()
         m_player->setPixmap(pm);
     }
 
-    m_player->setZValue(0);
+    m_player->setZValue(100);
 
     // X fija (un poco hacia la izquierda)
     //m_fixedPlayerX = width * 0.25;
@@ -229,7 +229,7 @@ void Level2::setupHearts()
 
     QRectF rect = m_scene->sceneRect();
     // mismo truco que en nivel 3 (corrimiento horizontal)
-    int xStart = static_cast<int>(rect.right()) - totalWidth - 550;
+    int xStart = static_cast<int>(rect.right()) - totalWidth - 225;
     int y = 5;
 
     for (int i = 0; i < m_maxLives; ++i) {
@@ -565,7 +565,7 @@ void Level2::spawnProjectile()
         projPixmap.fill(Qt::yellow);
     }
 
-    QPixmap projectileScaled = projPixmap.scaled(130, 50,
+    QPixmap projectileScaled = projPixmap.scaled(48, 48,
                                                  Qt::KeepAspectRatio,
                                                  Qt::SmoothTransformation);
 
@@ -588,16 +588,23 @@ void Level2::spawnProjectile()
     // --- Elegir X objetivo aleatoria en la carretera (NO siguiendo al jugador) ---
     QRectF r = m_scene->sceneRect();
 
-    // zona de impacto horizontal: parte media–derecha de la carretera
-    double minX = r.width() * 0.35;
-    double maxX = r.width() - 80.0;
+    // Centro de impacto: un poco delante del prisionero
+    double targetXCenter = m_fixedPlayerX + 40.0;   // ajusta este 40 si quieres más delante
 
-    if (minX < 150.0) minX = 150.0;
-    if (maxX <= minX + 10.0) maxX = minX + 10.0;
+    // “spread” = qué tanto se puede desviar a izquierda/derecha de ese punto
+    double spread = 70.0;
 
-    int minXi = static_cast<int>(minX);
-    int maxXi = static_cast<int>(maxX);
-    double targetX = QRandomGenerator::global()->bounded(minXi, maxXi);
+    // offset aleatorio en [-spread, spread)
+    double offset = QRandomGenerator::global()->bounded(2.0 * spread) - spread;
+
+    double targetX = targetXCenter + offset;
+
+    // Aseguramos que quede dentro de la escena
+    if (targetX < r.left() + 50.0)
+        targetX = r.left() + 50.0;
+    if (targetX > r.right() - 80.0)
+        targetX = r.right() - 80.0;
+
 
     // Y objetivo para el centro del proyectil (un poco por encima del suelo del carril)
     double targetY = impactY - projectileScaled.height();

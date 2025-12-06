@@ -30,6 +30,8 @@ Level3::Level3(QWidget *parent)
     m_maxLives(3),
     m_bgm(new QMediaPlayer(this)),
     m_audioOutput(new QAudioOutput(this)),
+    m_explosionSfx(new QMediaPlayer(this)),     // <-- NUEVO
+    m_explosionOutput(new QAudioOutput(this)),
     m_minX(0.0),
     m_maxX(0.0),
     m_groundY(0.0),
@@ -40,6 +42,10 @@ Level3::Level3(QWidget *parent)
     m_facingRight(true)
 {
     m_bgm->setAudioOutput(m_audioOutput);
+
+    m_explosionSfx->setAudioOutput(m_explosionOutput);
+    m_explosionSfx->setSource(QUrl("qrc:/assets/medium-explosion-40472.mp3"));
+    m_explosionOutput->setVolume(0.7);
 
     QPixmap sheet(":/assets/explosion_l3.png");
     if (!sheet.isNull()) {
@@ -606,6 +612,11 @@ void Level3::createExplosionAt(double x, double y)
 {
     if (m_explosionFrames.isEmpty())
         return;
+
+    if (m_explosionSfx) {
+        m_explosionSfx->stop();
+        m_explosionSfx->play();
+    }
 
     Explosion *exp = new Explosion(m_explosionFrames);
     exp->setFrameDuration(0.04); // ajusta si quieres más lenta/rápida

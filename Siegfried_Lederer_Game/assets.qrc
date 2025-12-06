@@ -33,5 +33,8 @@
         <file>assets/salida_boton.png</file>
         <file>assets/mira.png</file>
         <file>assets/fondo_largo_l2.png</file>
+        <file>assets/dramatic-death-collapse-352720.mp3</file>
+        <file>assets/game-over-252897.mp3</file>
+        <file>assets/medium-explosion-40472.mp3</file>
     </qresource>
 </RCC>

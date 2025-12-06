@@ -53,6 +53,9 @@ private:
     QMediaPlayer *m_bgm;
     QAudioOutput *m_audioOutput;
 
+    QMediaPlayer *m_explosionSfx;
+    QAudioOutput *m_explosionOutput;
+
 
     double m_minX;
     double m_maxX;

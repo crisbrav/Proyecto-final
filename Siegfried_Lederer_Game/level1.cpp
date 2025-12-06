@@ -12,7 +12,14 @@
 #include <QKeyEvent>
 #include <QBrush>
 #include <QPen>
-#include <Qtimer>
+#include <QTimer>
+#include <QDebug>
+#include <QGraphicsTextItem>
+#include <QRandomGenerator>
+#include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QUrl>
+
 
 Level1::Level1(QWidget *parent)
     : BaseLevel(parent),
@@ -28,9 +35,22 @@ Level1::Level1(QWidget *parent)
     m_whiteKeysCollected(0),
     m_blueKeysNeeded(2),
     m_whiteKeysNeeded(2),
-    m_lives(MAX_LIVES)
+    m_lives(MAX_LIVES),
+    m_bgm(new QMediaPlayer(this)),
+    m_bgmOutput(new QAudioOutput(this)),
+    m_guardHitSfx(new QMediaPlayer(this)),
+    m_guardHitOutput(new QAudioOutput(this))
 {
     setupScene();
+
+    m_bgm->setAudioOutput(m_bgmOutput);
+    m_bgm->setSource(QUrl("qrc:/assets/game-over-252897.mp3"));
+    m_bgmOutput->setVolume(0.4);
+    m_bgm->setLoops(QMediaPlayer::Infinite);
+
+    m_guardHitSfx->setAudioOutput(m_guardHitOutput);
+    m_guardHitSfx->setSource(QUrl("qrc:/assets/dramatic-death-collapse-352720.mp3"));
+    m_guardHitOutput->setVolume(0.9);
 }
 
 
@@ -399,7 +419,23 @@ void Level1::resetLevelState()
 void Level1::startLevel()
 {
     resetLevelState();
-    m_mainTimer->start(16);
+
+    if (m_bgm) {
+        m_bgm->stop();   // por si venía sonando de antes
+        m_bgm->play();
+    }
+
+    if (m_mainTimer)
+        m_mainTimer->start(16);
+}
+
+void Level1::stopLevel()
+{
+    if (m_mainTimer)
+        m_mainTimer->stop();
+
+    if (m_bgm)
+        m_bgm->stop();
 }
 
 void Level1::updatePlayerMovement(double dt)
@@ -489,6 +525,10 @@ void Level1::checkCollisions()
 
         if (g->collidesWithItem(m_player)) {
             // perder una vida
+            if (m_guardHitSfx) {
+                m_guardHitSfx->stop();
+                m_guardHitSfx->play();
+            }
             --m_lives;
             if (m_lives < 0) m_lives = 0;
             updateHeartsHUD();
@@ -534,11 +574,36 @@ void Level1::checkCollisions()
         if (!t) continue;
 
         if (t->collidesWithItem(m_player)) {
-            stopLevel();
-            emit levelFailed();
-            return;
+
+            // Sonido de golpe (reusamos el de los guardias)
+            if (m_guardHitSfx) {
+                m_guardHitSfx->stop();
+                m_guardHitSfx->play();
+            }
+
+            // Restar una vida
+            --m_lives;
+            if (m_lives < 0) m_lives = 0;
+            updateHeartsHUD();
+
+            if (m_lives <= 0) {
+                // Sin vidas -> game over
+                stopLevel();
+                emit levelFailed();
+                return;
+            } else {
+                // Todavía quedan vidas -> reposicionamos al jugador al inicio
+                QPoint startCell  = m_grid->playerStartCell();
+                QPointF startCenter = m_grid->cellCenter(startCell);
+                QPixmap pm = m_player->pixmap();
+                m_player->setPos(startCenter.x() - pm.width() / 2.0,
+                                 startCenter.y() - pm.height() / 2.0);
+                // Salimos para no procesar más colisiones este frame
+                return;
+            }
         }
     }
+
 
     // salida
     QPointF center = m_player->pos()
@@ -574,27 +639,34 @@ void Level1::setupTraps()
         trapPixmap.fill(Qt::magenta);
     }
 
-    // Elegimos una celda de pasillo para la trampa
-    // Por ejemplo: columna 9, fila 3 (x=9,y=3) en nuestro laberinto
-    QPoint trapCell(9, 3);
-    if (!m_grid->isWalkable(trapCell))
-        return; // por si cambiaste el mapa
+    //  vector de posiciones de trampas
+    QVector<QPoint> trapCells;
+    trapCells.append(QPoint(9, 3));
+    trapCells.append(QPoint(7, 8));
 
-    MovingTrap *trap = new MovingTrap();
-    trap->setPixmap(trapPixmap);
+    // Crear una MovingTrap por cada celda
+    for (const QPoint &trapCell : trapCells) {
 
-    QPointF cellCenter = m_grid->cellCenter(trapCell);
-    QPointF basePos(cellCenter.x() - trapPixmap.width() / 2.0,
-                    cellCenter.y() - trapPixmap.height() / 2.0);
+        if (!m_grid->isWalkable(trapCell))
+            continue; // si esa celda no es pasillo, la saltamos
 
-    trap->setCenter(basePos);
-    trap->setAmplitude(cs * 1.0); // se mueve ~1.5 celdas
-    trap->setOmega(3.0);          // +/− frecuencia
+        MovingTrap *trap = new MovingTrap();
+        trap->setPixmap(trapPixmap);
 
-    trap->setZValue(5);
-    m_scene->addItem(trap);
-    m_traps.append(trap);
+        QPointF cellCenter = m_grid->cellCenter(trapCell);
+        QPointF basePos(cellCenter.x() - trapPixmap.width() / 2.0,
+                        cellCenter.y() - trapPixmap.height() / 2.0);
+
+        trap->setCenter(basePos);
+        trap->setAmplitude(cs * 1.0); // cuánto se mueve
+        trap->setOmega(3.0);          // velocidad angular
+
+        trap->setZValue(5);
+        m_scene->addItem(trap);
+        m_traps.append(trap);
+    }
 }
+
 
 
 void Level1::updateGame()

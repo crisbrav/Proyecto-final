@@ -7,11 +7,16 @@
 #include <QVector>
 #include <QPixmap>
 #include <QGraphicsRectItem>
+#include <QMediaPlayer>
+#include <QAudioOutput>
+
 
 class Player;
 class Guard;
 class MazeGrid;
 class MovingTrap;
+class QMediaPlayer;
+class QAudioOutput;
 class Level1 : public BaseLevel
 {
     Q_OBJECT
@@ -19,6 +24,7 @@ class Level1 : public BaseLevel
 public:
     explicit Level1(QWidget *parent = 0);
 
+    void stopLevel() override;
     void startLevel() override;
 
 protected slots:
@@ -36,6 +42,7 @@ private:
         bool collected;
     };
 
+
     // --- llaves ---
     QVector<KeyData> m_keys;
     int m_blueKeysCollected;
@@ -48,6 +55,13 @@ private:
     int m_lives;
     QVector<QGraphicsPixmapItem*> m_heartIcons;
     QPixmap m_heartPixmap;
+
+    // ---- Audio ----
+    QMediaPlayer  *m_bgm;              // música del nivel
+    QAudioOutput  *m_bgmOutput;
+
+    QMediaPlayer  *m_guardHitSfx;      // sonido cuando te atrapa un guardia
+    QAudioOutput  *m_guardHitOutput;
 
 
     Player *m_player;
