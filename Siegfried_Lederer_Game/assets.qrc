@@ -1,0 +1,40 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/363_full_game-of-rings_0155_preview.mp3</file>
+        <file>assets/drop_bomb.png</file>
+        <file>assets/fondo_level3_800.png</file>
+        <file>assets/prisionero_l3.png</file>
+        <file>assets/explosion_l3.png</file>
+        <file>assets/guard_l1.png</file>
+        <file>assets/muro_l1.png</file>
+        <file>assets/prisoner_l1_back.png</file>
+        <file>assets/prisoner_l1_front.png</file>
+        <file>assets/salida_l1.png</file>
+        <file>assets/suelo_l1.png</file>
+        <file>assets/trampa_sinusoidal.png</file>
+        <file>assets/prisoner_l1_sides.png</file>
+        <file>assets/corazon.png</file>
+        <file>assets/key-blue.png</file>
+        <file>assets/key-white.png</file>
+        <file>assets/quieto_l3.png</file>
+        <file>assets/corazon_l3.png</file>
+        <file>assets/Fondo_l2.png</file>
+        <file>assets/obstaculo_l2.png</file>
+        <file>assets/proyectil_l2.png</file>
+        <file>assets/tanque_l2.png</file>
+        <file>assets/boton_l1.png</file>
+        <file>assets/boton_l2.png</file>
+        <file>assets/boton_l3.png</file>
+        <file>assets/imagen_fondo_botones.jpg</file>
+        <file>assets/img_complet_l1.png</file>
+        <file>assets/img_complet_l2.png</file>
+        <file>assets/img_complet_l3.jpg</file>
+        <file>assets/img_gameover.jpg</file>
+        <file>assets/salida_boton.png</file>
+        <file>assets/mira.png</file>
+        <file>assets/fondo_largo_l2.png</file>
+        <file>assets/dramatic-death-collapse-352720.mp3</file>
+        <file>assets/game-over-252897.mp3</file>
+        <file>assets/medium-explosion-40472.mp3</file>
+    </qresource>
+</RCC>
